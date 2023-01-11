@@ -270,7 +270,7 @@ std::shared_ptr<object::Item> Mutation::applyModifyItem(ModifyItemInput&& inputA
 		auto propIds = store->lookupPropIdInputs(std::move(*inputArg.deleted));
 		mapi_ptr<SPropTagArray> deletePropIds;
 
-		CORt(::MAPIAllocateBuffer(CbNewSPropTagArray(propIds.size()),
+		CORt(::MAPIAllocateBuffer(CbNewSPropTagArray(static_cast<ULONG>(propIds.size())),
 			reinterpret_cast<void**>(&out_ptr { deletePropIds })));
 		CFRt(deletePropIds != nullptr);
 		deletePropIds->cValues = static_cast<ULONG>(propIds.size());
@@ -359,7 +359,7 @@ std::shared_ptr<object::Folder> Mutation::applyModifyFolder(ModifyFolderInput&& 
 		auto propIds = store->lookupPropIdInputs(std::move(*inputArg.deleted));
 		mapi_ptr<SPropTagArray> deletePropIds;
 
-		CORt(::MAPIAllocateBuffer(CbNewSPropTagArray(propIds.size()),
+		CORt(::MAPIAllocateBuffer(CbNewSPropTagArray(static_cast<ULONG>(propIds.size())),
 			reinterpret_cast<void**>(&out_ptr { deletePropIds })));
 		CFRt(deletePropIds != nullptr);
 		deletePropIds->cValues = static_cast<ULONG>(propIds.size());

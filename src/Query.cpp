@@ -76,7 +76,7 @@ void Query::LoadStores(service::Directives&& fieldDirectives)
 	constexpr auto c_storeProps = Store::GetStoreColumns();
 	mapi_ptr<SPropTagArray> storeProps;
 
-	CORt(::MAPIAllocateBuffer(CbNewSPropTagArray(c_storeProps.size()),
+	CORt(::MAPIAllocateBuffer(CbNewSPropTagArray(static_cast<ULONG>(c_storeProps.size())),
 		reinterpret_cast<void**>(&out_ptr { storeProps })));
 	CFRt(storeProps != nullptr);
 	storeProps->cValues = static_cast<ULONG>(c_storeProps.size());
@@ -85,7 +85,7 @@ void Query::LoadStores(service::Directives&& fieldDirectives)
 	constexpr std::array c_storeSorts = Store::GetStoreSorts();
 	mapi_ptr<SSortOrderSet> storeSorts;
 
-	CORt(::MAPIAllocateBuffer(CbNewSSortOrderSet(c_storeSorts.size()),
+	CORt(::MAPIAllocateBuffer(CbNewSSortOrderSet(static_cast<ULONG>(c_storeSorts.size())),
 		reinterpret_cast<void**>(&out_ptr { storeSorts })));
 	CFRt(storeSorts != nullptr);
 	storeSorts->cSorts = static_cast<ULONG>(c_storeSorts.size());

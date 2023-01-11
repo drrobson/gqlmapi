@@ -33,7 +33,7 @@ Property::Property(const id_variant& id, mapi_ptr<SPropValue>&& value)
 			}
 			else
 			{
-				static_assert(false, "unhandled variant type");
+				throw new std::invalid_argument("unsupported variant type");
 			}
 		},
 		id) }

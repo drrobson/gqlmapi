@@ -474,7 +474,7 @@ std::vector<std::shared_ptr<Item>> Subscription::LoadRows<Item>(
 	constexpr auto c_itemProps = Item::GetItemColumns();
 	mapi_ptr<SPropTagArray> itemProps;
 
-	CORt(::MAPIAllocateBuffer(CbNewSPropTagArray(c_itemProps.size()),
+	CORt(::MAPIAllocateBuffer(CbNewSPropTagArray(static_cast<ULONG>(c_itemProps.size())),
 		reinterpret_cast<void**>(&out_ptr { itemProps })));
 	CFRt(itemProps != nullptr);
 	itemProps->cValues = static_cast<ULONG>(c_itemProps.size());
@@ -483,7 +483,7 @@ std::vector<std::shared_ptr<Item>> Subscription::LoadRows<Item>(
 	constexpr auto c_itemSorts = Item::GetItemSorts();
 	mapi_ptr<SSortOrderSet> itemSorts;
 
-	CORt(::MAPIAllocateBuffer(CbNewSSortOrderSet(c_itemSorts.size()),
+	CORt(::MAPIAllocateBuffer(CbNewSSortOrderSet(static_cast<ULONG>(c_itemSorts.size())),
 		reinterpret_cast<void**>(&out_ptr { itemSorts })));
 	CFRt(itemSorts != nullptr);
 	itemSorts->cSorts = static_cast<ULONG>(c_itemSorts.size());
@@ -534,7 +534,7 @@ std::vector<std::shared_ptr<Folder>> Subscription::LoadRows<Folder>(
 	constexpr auto c_folderProps = Folder::GetFolderColumns();
 	mapi_ptr<SPropTagArray> folderProps;
 
-	CORt(::MAPIAllocateBuffer(CbNewSPropTagArray(c_folderProps.size()),
+	CORt(::MAPIAllocateBuffer(CbNewSPropTagArray(static_cast<ULONG>(c_folderProps.size())),
 		reinterpret_cast<void**>(&out_ptr { folderProps })));
 	CFRt(folderProps != nullptr);
 	folderProps->cValues = static_cast<ULONG>(c_folderProps.size());
@@ -543,7 +543,7 @@ std::vector<std::shared_ptr<Folder>> Subscription::LoadRows<Folder>(
 	constexpr auto c_folderSorts = Folder::GetFolderSorts();
 	mapi_ptr<SSortOrderSet> folderSorts;
 
-	CORt(::MAPIAllocateBuffer(CbNewSSortOrderSet(c_folderSorts.size()),
+	CORt(::MAPIAllocateBuffer(CbNewSSortOrderSet(static_cast<ULONG>(c_folderSorts.size())),
 		reinterpret_cast<void**>(&out_ptr { folderSorts })));
 	CFRt(folderSorts != nullptr);
 	folderSorts->cSorts = static_cast<ULONG>(c_folderSorts.size());

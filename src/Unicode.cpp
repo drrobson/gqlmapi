@@ -14,11 +14,11 @@ std::string to_utf8(std::wstring_view source)
 
 	if (!source.empty())
 	{
-		const auto cch = WideCharToMultiByte(CP_UTF8, 0, source.data(), source.size(), nullptr, 0, nullptr, nullptr);
+		const auto cch = WideCharToMultiByte(CP_UTF8, 0, source.data(), static_cast<int>(source.size()), nullptr, 0, nullptr, nullptr);
 
 		CFRt(cch > 0);
 		result.resize(static_cast<size_t>(cch));
-		CFRt(cch == WideCharToMultiByte(CP_UTF8, 0, source.data(), source.size(), result.data(), result.size(), nullptr, nullptr));
+		CFRt(cch == WideCharToMultiByte(CP_UTF8, 0, source.data(), static_cast<int>(source.size()), result.data(), static_cast<int>(result.size()), nullptr, nullptr));
 	}
 
 	return result;
@@ -30,11 +30,11 @@ std::wstring to_utf16(std::string_view source)
 
 	if (!source.empty())
 	{
-		const auto cch = MultiByteToWideChar(CP_UTF8, 0, source.data(), source.size(), nullptr, 0);
+		const auto cch = MultiByteToWideChar(CP_UTF8, 0, source.data(), static_cast<int>(source.size()), nullptr, 0);
 
 		CFRt(cch > 0);
 		result.resize(static_cast<size_t>(cch));
-		CFRt(cch == MultiByteToWideChar(CP_UTF8, 0, source.data(), source.size(), result.data(), result.size()));
+		CFRt(cch == MultiByteToWideChar(CP_UTF8, 0, source.data(), static_cast<int>(source.size()), result.data(), static_cast<int>(result.size())));
 	}
 
 	return result;

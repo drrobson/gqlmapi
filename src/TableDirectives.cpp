@@ -112,7 +112,7 @@ mapi_ptr<SPropTagArray> TableDirectives::columns(mapi_ptr<SPropTagArray>&& defau
 		mapi_ptr<SPropTagArray> mergedColumns;
 		const size_t defaultCount = result ? static_cast<size_t>(result->cValues) : 0;
 
-		CORt(::MAPIAllocateBuffer(CbNewSPropTagArray(defaultCount + m_columns->size()),
+		CORt(::MAPIAllocateBuffer(CbNewSPropTagArray(static_cast<ULONG>(defaultCount + m_columns->size())),
 			reinterpret_cast<void**>(&out_ptr { mergedColumns })));
 		CFRt(mergedColumns != nullptr);
 		mergedColumns->cValues = static_cast<ULONG>(defaultCount + m_columns->size());
@@ -206,7 +206,7 @@ mapi_ptr<SSortOrderSet> TableDirectives::orderBy(mapi_ptr<SSortOrderSet>&& defau
 		}
 
 		CFRt(resolved.size() == m_orderBy->size());
-		CORt(::MAPIAllocateBuffer(CbNewSSortOrderSet(resolved.size()),
+		CORt(::MAPIAllocateBuffer(static_cast<ULONG>(CbNewSSortOrderSet(resolved.size())),
 			reinterpret_cast<void**>(&out_ptr { result })));
 		CFRt(result != nullptr);
 		result->cSorts = static_cast<ULONG>(resolved.size());
