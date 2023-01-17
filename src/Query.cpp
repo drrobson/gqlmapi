@@ -153,6 +153,13 @@ std::vector<std::shared_ptr<object::Store>> Query::getStores(
 
 	if (idsArg)
 	{
+        // Error out if caller requested a non-existent store
+        for (const auto& id : idsArg.value())
+        {
+            if (!lookup(id))
+                throw std::exception(std::format("Store not found with id=\"{}\"", id.c_str()).c_str());
+        }
+
 		// Lookup the stores with the specified IDs
 		result.resize(idsArg->size());
 		std::transform(idsArg->cbegin(),
