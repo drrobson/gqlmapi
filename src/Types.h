@@ -452,6 +452,8 @@ public:
 		response::IdType&& folderIdArg, std::optional<std::vector<Column>>&& idsArg);
 	std::vector<std::shared_ptr<object::Property>> getItemProperties(
 		response::IdType&& itemIdArg, std::optional<std::vector<Column>>&& idsArg);
+    std::optional<std::vector<std::shared_ptr<object::Folder>>> getFolderHierarchy(
+        std::optional<response::IdType> parentFolderIdArg, response::BooleanType&& onlyChildrenArg);
 
 private:
 	// Used during construction
@@ -512,6 +514,8 @@ public:
 		Name,
 		Total,
 		Unread,
+        HasSubfolders,
+        ContainerClass,
 		Count
 	};
 
@@ -524,6 +528,8 @@ public:
 			PR_DISPLAY_NAME_W,
 			PR_CONTENT_COUNT,
 			PR_CONTENT_UNREAD,
+            PR_SUBFOLDERS,
+            PR_CONTAINER_CLASS_W,
 		};
 
 		return folderProps;
@@ -537,8 +543,10 @@ public:
 	const response::IdType& instanceKey() const;
 	const response::IdType& id() const;
 	const std::string& name() const;
+    const std::string& containerClass() const;
 	int count() const;
 	int unread() const;
+    bool hasSubfolders() const;
 	const CComPtr<IMAPIFolder>& folder();
 	const std::vector<std::shared_ptr<Folder>>& subFolders();
 	std::shared_ptr<Folder> parentFolder() const;
@@ -553,6 +561,7 @@ public:
 	const std::string& getName() const;
 	int getCount() const;
 	int getUnread() const;
+    std::optional<std::string> getContainerClass() const;
 	std::optional<SpecialFolder> getSpecialFolder() const;
 	std::vector<std::shared_ptr<object::Property>> getColumns() const;
 	std::vector<std::shared_ptr<object::Folder>> getSubFolders(
@@ -568,6 +577,7 @@ private:
 	response::IdType GetIdColumn(DefaultColumn column) const;
 	std::string GetStringColumn(DefaultColumn column) const;
 	int GetIntColumn(DefaultColumn column) const;
+    bool GetBoolColumn(DefaultColumn column) const;
 
 	// These are all initialized at construction.
 	const std::weak_ptr<Store> m_store;
@@ -577,8 +587,10 @@ private:
 	const response::IdType m_id;
 	const response::IdType m_parentId;
 	const std::string m_name;
+    const std::string m_containerClass;
 	const int m_count;
 	const int m_unread;
+    const bool m_hasSubfolders;
 	const std::optional<SpecialFolder> m_specialFolder;
 
 	// These lazy load and cache results between calls to const methods.

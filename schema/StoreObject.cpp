@@ -45,6 +45,7 @@ service::ResolverMap Store::getResolvers() const noexcept
 		{ R"gql(rootFolders)gql"sv, [this](service::ResolverParams&& params) { return resolveRootFolders(std::move(params)); } },
 		{ R"gql(itemProperties)gql"sv, [this](service::ResolverParams&& params) { return resolveItemProperties(std::move(params)); } },
 		{ R"gql(specialFolders)gql"sv, [this](service::ResolverParams&& params) { return resolveSpecialFolders(std::move(params)); } },
+		{ R"gql(folderHierarchy)gql"sv, [this](service::ResolverParams&& params) { return resolveFolderHierarchy(std::move(params)); } },
 		{ R"gql(folderProperties)gql"sv, [this](service::ResolverParams&& params) { return resolveFolderProperties(std::move(params)); } }
 	};
 }
@@ -135,6 +136,18 @@ service::AwaitableResolver Store::resolveItemProperties(service::ResolverParams&
 	return service::ModifiedResult<Property>::convert<service::TypeModifier::List, service::TypeModifier::Nullable>(std::move(result), std::move(params));
 }
 
+service::AwaitableResolver Store::resolveFolderHierarchy(service::ResolverParams&& params) const
+{
+	auto argParentFolderId = service::ModifiedArgument<response::IdType>::require<service::TypeModifier::Nullable>("parentFolderId", params.arguments);
+	auto argOnlyChildren = service::ModifiedArgument<bool>::require("onlyChildren", params.arguments);
+	std::unique_lock resolverLock(_resolverMutex);
+	auto directives = std::move(params.fieldDirectives);
+	auto result = _pimpl->getFolderHierarchy(service::FieldParams(service::SelectionSetParams{ params }, std::move(directives)), std::move(argParentFolderId), std::move(argOnlyChildren));
+	resolverLock.unlock();
+
+	return service::ModifiedResult<Folder>::convert<service::TypeModifier::Nullable, service::TypeModifier::List>(std::move(result), std::move(params));
+}
+
 service::AwaitableResolver Store::resolve_typename(service::ResolverParams&& params) const
 {
 	return service::Result<std::string>::convert(std::string{ R"gql(Store)gql" }, std::move(params));
@@ -161,6 +174,10 @@ void AddStoreDetails(const std::shared_ptr<schema::ObjectType>& typeStore, const
 		schema::Field::Make(R"gql(itemProperties)gql"sv, R"md(Open a single item and read any or all of its properties.)md"sv, std::nullopt, schema->WrapType(introspection::TypeKind::NON_NULL, schema->WrapType(introspection::TypeKind::LIST, schema->LookupType(R"gql(Property)gql"sv))), {
 			schema::InputValue::Make(R"gql(itemId)gql"sv, R"md(Item ID)md"sv, schema->WrapType(introspection::TypeKind::NON_NULL, schema->LookupType(R"gql(ID)gql"sv)), R"gql()gql"sv),
 			schema::InputValue::Make(R"gql(ids)gql"sv, R"md(Optional list of property IDs, returns all properties if `null`)md"sv, schema->WrapType(introspection::TypeKind::LIST, schema->WrapType(introspection::TypeKind::NON_NULL, schema->LookupType(R"gql(Column)gql"sv))), R"gql()gql"sv)
+		}),
+		schema::Field::Make(R"gql(folderHierarchy)gql"sv, R"md(List of all folders in the store, optionally rooted at the given folder)md"sv, std::nullopt, schema->WrapType(introspection::TypeKind::LIST, schema->WrapType(introspection::TypeKind::NON_NULL, schema->LookupType(R"gql(Folder)gql"sv))), {
+			schema::InputValue::Make(R"gql(parentFolderId)gql"sv, R"md(Optional id of the root folder for the traversal, uses IPM_SUBTREE if `null`)md"sv, schema->LookupType(R"gql(ID)gql"sv), R"gql()gql"sv),
+			schema::InputValue::Make(R"gql(onlyChildren)gql"sv, R"md(Whether to return only immediate children or all descendents)md"sv, schema->WrapType(introspection::TypeKind::NON_NULL, schema->LookupType(R"gql(Boolean)gql"sv)), R"gql()gql"sv)
 		})
 	});
 }

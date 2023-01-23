@@ -98,6 +98,18 @@ concept getItemProperties = requires (TImpl impl, response::IdType itemIdArg, st
 };
 
 template <class TImpl>
+concept getFolderHierarchyWithParams = requires (TImpl impl, service::FieldParams params, std::optional<response::IdType> parentFolderIdArg, bool onlyChildrenArg)
+{
+	{ service::AwaitableObject<std::optional<std::vector<std::shared_ptr<Folder>>>> { impl.getFolderHierarchy(std::move(params), std::move(parentFolderIdArg), std::move(onlyChildrenArg)) } };
+};
+
+template <class TImpl>
+concept getFolderHierarchy = requires (TImpl impl, std::optional<response::IdType> parentFolderIdArg, bool onlyChildrenArg)
+{
+	{ service::AwaitableObject<std::optional<std::vector<std::shared_ptr<Folder>>>> { impl.getFolderHierarchy(std::move(parentFolderIdArg), std::move(onlyChildrenArg)) } };
+};
+
+template <class TImpl>
 concept beginSelectionSet = requires (TImpl impl, const service::SelectionSetParams params)
 {
 	{ impl.beginSelectionSet(params) };
@@ -122,6 +134,7 @@ private:
 	[[nodiscard]] service::AwaitableResolver resolveSpecialFolders(service::ResolverParams&& params) const;
 	[[nodiscard]] service::AwaitableResolver resolveFolderProperties(service::ResolverParams&& params) const;
 	[[nodiscard]] service::AwaitableResolver resolveItemProperties(service::ResolverParams&& params) const;
+	[[nodiscard]] service::AwaitableResolver resolveFolderHierarchy(service::ResolverParams&& params) const;
 
 	[[nodiscard]] service::AwaitableResolver resolve_typename(service::ResolverParams&& params) const;
 
@@ -139,6 +152,7 @@ private:
 		[[nodiscard]] virtual service::AwaitableObject<std::vector<std::shared_ptr<Folder>>> getSpecialFolders(service::FieldParams&& params, std::vector<SpecialFolder>&& idsArg) const = 0;
 		[[nodiscard]] virtual service::AwaitableObject<std::vector<std::shared_ptr<Property>>> getFolderProperties(service::FieldParams&& params, response::IdType&& folderIdArg, std::optional<std::vector<Column>>&& idsArg) const = 0;
 		[[nodiscard]] virtual service::AwaitableObject<std::vector<std::shared_ptr<Property>>> getItemProperties(service::FieldParams&& params, response::IdType&& itemIdArg, std::optional<std::vector<Column>>&& idsArg) const = 0;
+		[[nodiscard]] virtual service::AwaitableObject<std::optional<std::vector<std::shared_ptr<Folder>>>> getFolderHierarchy(service::FieldParams&& params, std::optional<response::IdType>&& parentFolderIdArg, bool&& onlyChildrenArg) const = 0;
 	};
 
 	template <class T>
@@ -259,6 +273,22 @@ private:
 			else
 			{
 				throw std::runtime_error(R"ex(Store::getItemProperties is not implemented)ex");
+			}
+		}
+
+		[[nodiscard]] service::AwaitableObject<std::optional<std::vector<std::shared_ptr<Folder>>>> getFolderHierarchy(service::FieldParams&& params, std::optional<response::IdType>&& parentFolderIdArg, bool&& onlyChildrenArg) const final
+		{
+			if constexpr (methods::StoreHas::getFolderHierarchyWithParams<T>)
+			{
+				return { _pimpl->getFolderHierarchy(std::move(params), std::move(parentFolderIdArg), std::move(onlyChildrenArg)) };
+			}
+			else if constexpr (methods::StoreHas::getFolderHierarchy<T>)
+			{
+				return { _pimpl->getFolderHierarchy(std::move(parentFolderIdArg), std::move(onlyChildrenArg)) };
+			}
+			else
+			{
+				throw std::runtime_error(R"ex(Store::getFolderHierarchy is not implemented)ex");
 			}
 		}
 

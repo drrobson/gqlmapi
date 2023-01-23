@@ -1005,7 +1005,8 @@ void AddTypesToSchema(const std::shared_ptr<schema::Schema>& schema)
 		{ service::s_namesSpecialFolder[static_cast<size_t>(mapi::SpecialFolder::DRAFTS)], R"md(Drafts of items which have not been sent yet)md"sv, std::nullopt },
 		{ service::s_namesSpecialFolder[static_cast<size_t>(mapi::SpecialFolder::OUTBOX)], R"md(Folder containing sent items which have not been delivered yet)md"sv, std::nullopt },
 		{ service::s_namesSpecialFolder[static_cast<size_t>(mapi::SpecialFolder::SENT)], R"md(Folder containing sent items which have been delivered)md"sv, std::nullopt },
-		{ service::s_namesSpecialFolder[static_cast<size_t>(mapi::SpecialFolder::SPAM)], R"md(Junk email folder containing messages that have been marked as spam)md"sv, std::nullopt }
+		{ service::s_namesSpecialFolder[static_cast<size_t>(mapi::SpecialFolder::SPAM)], R"md(Junk email folder containing messages that have been marked as spam)md"sv, std::nullopt },
+		{ service::s_namesSpecialFolder[static_cast<size_t>(mapi::SpecialFolder::IPM_SUBTREE)], R"md(Root folder of the InterPersonal Message (IPM) subtree)md"sv, std::nullopt }
 	});
 	typePropType->AddEnumValues({
 		{ service::s_namesPropType[static_cast<size_t>(mapi::PropType::INT)], R"md(This property expects an `IntValue`)md"sv, std::nullopt },

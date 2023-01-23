@@ -33,14 +33,15 @@ enum class [[nodiscard]] SpecialFolder
 	DRAFTS,
 	OUTBOX,
 	SENT,
-	SPAM
+	SPAM,
+	IPM_SUBTREE
 };
 
 [[nodiscard]] constexpr auto getSpecialFolderNames() noexcept
 {
 	using namespace std::literals;
 
-	return std::array<std::string_view, 10> {
+	return std::array<std::string_view, 11> {
 		R"gql(INBOX)gql"sv,
 		R"gql(CALENDAR)gql"sv,
 		R"gql(CONTACTS)gql"sv,
@@ -50,7 +51,8 @@ enum class [[nodiscard]] SpecialFolder
 		R"gql(DRAFTS)gql"sv,
 		R"gql(OUTBOX)gql"sv,
 		R"gql(SENT)gql"sv,
-		R"gql(SPAM)gql"sv
+		R"gql(SPAM)gql"sv,
+		R"gql(IPM_SUBTREE)gql"sv
 	};
 }
 
@@ -58,7 +60,7 @@ enum class [[nodiscard]] SpecialFolder
 {
 	using namespace std::literals;
 
-	return std::array<std::pair<std::string_view, SpecialFolder>, 10> {
+	return std::array<std::pair<std::string_view, SpecialFolder>, 11> {
 		std::make_pair(R"gql(SENT)gql"sv, SpecialFolder::SENT),
 		std::make_pair(R"gql(SPAM)gql"sv, SpecialFolder::SPAM),
 		std::make_pair(R"gql(INBOX)gql"sv, SpecialFolder::INBOX),
@@ -68,7 +70,8 @@ enum class [[nodiscard]] SpecialFolder
 		std::make_pair(R"gql(ARCHIVE)gql"sv, SpecialFolder::ARCHIVE),
 		std::make_pair(R"gql(DELETED)gql"sv, SpecialFolder::DELETED),
 		std::make_pair(R"gql(CALENDAR)gql"sv, SpecialFolder::CALENDAR),
-		std::make_pair(R"gql(CONTACTS)gql"sv, SpecialFolder::CONTACTS)
+		std::make_pair(R"gql(CONTACTS)gql"sv, SpecialFolder::CONTACTS),
+		std::make_pair(R"gql(IPM_SUBTREE)gql"sv, SpecialFolder::IPM_SUBTREE)
 	};
 }
 

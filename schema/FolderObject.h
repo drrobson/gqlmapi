@@ -62,6 +62,18 @@ concept getName = requires (TImpl impl)
 };
 
 template <class TImpl>
+concept getContainerClassWithParams = requires (TImpl impl, service::FieldParams params)
+{
+	{ service::AwaitableScalar<std::optional<std::string>> { impl.getContainerClass(std::move(params)) } };
+};
+
+template <class TImpl>
+concept getContainerClass = requires (TImpl impl)
+{
+	{ service::AwaitableScalar<std::optional<std::string>> { impl.getContainerClass() } };
+};
+
+template <class TImpl>
 concept getCountWithParams = requires (TImpl impl, service::FieldParams params)
 {
 	{ service::AwaitableScalar<int> { impl.getCount(std::move(params)) } };
@@ -167,6 +179,7 @@ private:
 	[[nodiscard]] service::AwaitableResolver resolveParentFolder(service::ResolverParams&& params) const;
 	[[nodiscard]] service::AwaitableResolver resolveStore(service::ResolverParams&& params) const;
 	[[nodiscard]] service::AwaitableResolver resolveName(service::ResolverParams&& params) const;
+	[[nodiscard]] service::AwaitableResolver resolveContainerClass(service::ResolverParams&& params) const;
 	[[nodiscard]] service::AwaitableResolver resolveCount(service::ResolverParams&& params) const;
 	[[nodiscard]] service::AwaitableResolver resolveUnread(service::ResolverParams&& params) const;
 	[[nodiscard]] service::AwaitableResolver resolveSpecialFolder(service::ResolverParams&& params) const;
@@ -188,6 +201,7 @@ private:
 		[[nodiscard]] virtual service::AwaitableObject<std::shared_ptr<Folder>> getParentFolder(service::FieldParams&& params) const = 0;
 		[[nodiscard]] virtual service::AwaitableObject<std::shared_ptr<Store>> getStore(service::FieldParams&& params) const = 0;
 		[[nodiscard]] virtual service::AwaitableScalar<std::string> getName(service::FieldParams&& params) const = 0;
+		[[nodiscard]] virtual service::AwaitableScalar<std::optional<std::string>> getContainerClass(service::FieldParams&& params) const = 0;
 		[[nodiscard]] virtual service::AwaitableScalar<int> getCount(service::FieldParams&& params) const = 0;
 		[[nodiscard]] virtual service::AwaitableScalar<int> getUnread(service::FieldParams&& params) const = 0;
 		[[nodiscard]] virtual service::AwaitableScalar<std::optional<SpecialFolder>> getSpecialFolder(service::FieldParams&& params) const = 0;
@@ -267,6 +281,22 @@ private:
 			else
 			{
 				throw std::runtime_error(R"ex(Folder::getName is not implemented)ex");
+			}
+		}
+
+		[[nodiscard]] service::AwaitableScalar<std::optional<std::string>> getContainerClass(service::FieldParams&& params) const final
+		{
+			if constexpr (methods::FolderHas::getContainerClassWithParams<T>)
+			{
+				return { _pimpl->getContainerClass(std::move(params)) };
+			}
+			else if constexpr (methods::FolderHas::getContainerClass<T>)
+			{
+				return { _pimpl->getContainerClass() };
+			}
+			else
+			{
+				throw std::runtime_error(R"ex(Folder::getContainerClass is not implemented)ex");
 			}
 		}
 

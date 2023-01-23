@@ -79,6 +79,14 @@ type Store {
     "Optional list of property IDs, returns all properties if `null`"
     ids: [Column!]
   ): [Property]!
+
+  "List of all folders in the store, optionally rooted at the given folder"
+  folderHierarchy(
+    "Optional id of the root folder for the traversal, uses IPM_SUBTREE if `null`"
+    parentFolderId: ID
+    "Whether to return only immediate children or all descendents"
+    onlyChildren: Boolean!
+  ) : [Folder!]
 }
 
 "Special folders are created by default in most stores."
@@ -103,6 +111,8 @@ enum SpecialFolder {
   SENT
   "Junk email folder containing messages that have been marked as spam"
   SPAM
+  "Root folder of the InterPersonal Message (IPM) subtree"
+  IPM_SUBTREE
 }
 
 "Folders create a hierarchy within each store."
@@ -115,6 +125,8 @@ type Folder {
   store: Store!
   "Name of this folder"
   name: String!
+  "Class of items contained in this folder"
+  containerClass: String
   "Total item count"
   count: Int!
   "Unread item count"

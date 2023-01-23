@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#include <queue>
+
 #include "DateTime.h"
 #include "Guid.h"
 #include "Input.h"
@@ -1084,6 +1086,42 @@ std::vector<std::shared_ptr<object::Property>> Store::getColumns()
 	return { GetColumns(m_columnCount - offset, m_columns.get() + offset) };
 }
 
+std::optional<std::vector<std::shared_ptr<object::Folder>>> Store::getFolderHierarchy(
+    std::optional<response::IdType> parentFolderIdArg, response::BooleanType&& onlyChildrenArg)
+{
+    std::shared_ptr<Folder> ancestor;
+    if (parentFolderIdArg)
+    {
+        ancestor = OpenFolder(convert::input::from_input(std::move(parentFolderIdArg.value())));
+    }
+    else
+    {
+        ancestor = OpenFolder(rootId());
+    }
+    CFRt(ancestor != nullptr);
+
+    std::vector<std::shared_ptr<object::Folder>> results;
+
+    std::queue<std::shared_ptr<Folder>> foldersToProcess;
+    foldersToProcess.emplace(std::move(ancestor));
+
+	while (!foldersToProcess.empty())
+    {
+        std::vector<std::shared_ptr<Folder>> nextSubfolders = foldersToProcess.front()->subFolders();
+        foldersToProcess.pop();
+
+        for (auto& subfolder : nextSubfolders)
+        {
+            results.emplace_back(std::make_shared<object::Folder>(subfolder));
+
+            if (subfolder->hasSubfolders())
+                foldersToProcess.emplace(std::move(subfolder));
+        }
+    }
+
+    return results;
+}
+
 std::vector<std::shared_ptr<object::Folder>> Store::getRootFolders(
 	service::FieldParams&& params, std::optional<std::vector<response::IdType>>&& idsArg)
 {
@@ -1156,9 +1194,9 @@ std::vector<std::shared_ptr<object::Property>> Store::getItemProperties(
 
 void Store::FillInStoreProps(LPSPropValue storeIds, std::map<SpecialFolder, SBinary>& idMap)
 {
-	// Skip IPMSubtree, but verify we got it.
 	const SPropValue& ipmSubtree = storeIds[static_cast<size_t>(StoreProp::IPMSubtree)];
 	CFRt(ipmSubtree.ulPropTag == PR_IPM_SUBTREE_ENTRYID);
+    idMap[SpecialFolder::IPM_SUBTREE] = storeIds[static_cast<size_t>(StoreProp::IPMSubtree)].Value.bin;
 
 	const std::array c_entries {
 		std::make_pair(SpecialFolder::DELETED, StoreProp::DeletedItems),

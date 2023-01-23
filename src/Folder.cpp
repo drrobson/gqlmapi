@@ -19,8 +19,10 @@ static_assert(GetColumnPropType(Folder::DefaultColumn::InstanceKey) == PT_BINARY
 static_assert(GetColumnPropType(Folder::DefaultColumn::Id) == PT_BINARY, "type mismatch");
 static_assert(GetColumnPropType(Folder::DefaultColumn::ParentId) == PT_BINARY, "type mismatch");
 static_assert(GetColumnPropType(Folder::DefaultColumn::Name) == PT_UNICODE, "type mismatch");
+static_assert(GetColumnPropType(Folder::DefaultColumn::ContainerClass) == PT_UNICODE, "type mismatch");
 static_assert(GetColumnPropType(Folder::DefaultColumn::Total) == PT_LONG, "type mismatch");
 static_assert(GetColumnPropType(Folder::DefaultColumn::Unread) == PT_LONG, "type mismatch");
+static_assert(GetColumnPropType(Folder::DefaultColumn::HasSubfolders) == PT_BOOLEAN, "type mismatch");
 
 Folder::Folder(const std::shared_ptr<Store>& store, IMAPIFolder* pFolder, size_t columnCount,
 	mapi_ptr<SPropValue>&& columns)
@@ -31,8 +33,10 @@ Folder::Folder(const std::shared_ptr<Store>& store, IMAPIFolder* pFolder, size_t
 	, m_id { GetIdColumn(DefaultColumn::Id) }
 	, m_parentId { GetIdColumn(DefaultColumn::ParentId) }
 	, m_name { GetStringColumn(DefaultColumn::Name) }
+    , m_containerClass { GetStringColumn(DefaultColumn::ContainerClass) }
 	, m_count { GetIntColumn(DefaultColumn::Total) }
 	, m_unread { GetIntColumn(DefaultColumn::Unread) }
+	, m_hasSubfolders { GetBoolColumn(DefaultColumn::HasSubfolders) }
 	, m_specialFolder { [this]() {
 		// Check if this folder matches a special folder, and re-use the special folder if it does.
 		auto spStore = m_store.lock();
@@ -87,6 +91,11 @@ const std::string& Folder::name() const
 	return m_name;
 }
 
+const std::string& Folder::containerClass() const
+{
+    return m_containerClass;
+}
+
 int Folder::count() const
 {
 	return m_count;
@@ -95,6 +104,11 @@ int Folder::count() const
 int Folder::unread() const
 {
 	return m_unread;
+}
+
+bool Folder::hasSubfolders() const
+{
+    return m_hasSubfolders;
 }
 
 const CComPtr<IMAPIFolder>& Folder::folder()
@@ -194,6 +208,18 @@ int Folder::GetIntColumn(DefaultColumn column) const
 	}
 
 	return static_cast<int>(intProp.Value.l);
+}
+
+bool Folder::GetBoolColumn(DefaultColumn column) const
+{
+	const auto& boolProp = GetColumnProp(column);
+
+	if (PROP_TYPE(boolProp.ulPropTag) != PT_BOOLEAN)
+	{
+		return 0;
+	}
+
+	return static_cast<bool>(boolProp.Value.b);
 }
 
 void Folder::OpenFolder()
@@ -412,6 +438,11 @@ int Folder::getCount() const
 int Folder::getUnread() const
 {
 	return m_unread;
+}
+
+std::optional<std::string> Folder::getContainerClass() const
+{
+    return m_containerClass.empty() ? std::nullopt : std::make_optional(m_containerClass);
 }
 
 std::optional<SpecialFolder> Folder::getSpecialFolder() const

@@ -52,7 +52,8 @@ service::ResolverMap Folder::getResolvers() const noexcept
 		{ R"gql(subFolders)gql"sv, [this](service::ResolverParams&& params) { return resolveSubFolders(std::move(params)); } },
 		{ R"gql(parentFolder)gql"sv, [this](service::ResolverParams&& params) { return resolveParentFolder(std::move(params)); } },
 		{ R"gql(conversations)gql"sv, [this](service::ResolverParams&& params) { return resolveConversations(std::move(params)); } },
-		{ R"gql(specialFolder)gql"sv, [this](service::ResolverParams&& params) { return resolveSpecialFolder(std::move(params)); } }
+		{ R"gql(specialFolder)gql"sv, [this](service::ResolverParams&& params) { return resolveSpecialFolder(std::move(params)); } },
+		{ R"gql(containerClass)gql"sv, [this](service::ResolverParams&& params) { return resolveContainerClass(std::move(params)); } }
 	};
 }
 
@@ -104,6 +105,16 @@ service::AwaitableResolver Folder::resolveName(service::ResolverParams&& params)
 	resolverLock.unlock();
 
 	return service::ModifiedResult<std::string>::convert(std::move(result), std::move(params));
+}
+
+service::AwaitableResolver Folder::resolveContainerClass(service::ResolverParams&& params) const
+{
+	std::unique_lock resolverLock(_resolverMutex);
+	auto directives = std::move(params.fieldDirectives);
+	auto result = _pimpl->getContainerClass(service::FieldParams(service::SelectionSetParams{ params }, std::move(directives)));
+	resolverLock.unlock();
+
+	return service::ModifiedResult<std::string>::convert<service::TypeModifier::Nullable>(std::move(result), std::move(params));
 }
 
 service::AwaitableResolver Folder::resolveCount(service::ResolverParams&& params) const
@@ -193,6 +204,7 @@ void AddFolderDetails(const std::shared_ptr<schema::ObjectType>& typeFolder, con
 		schema::Field::Make(R"gql(parentFolder)gql"sv, R"md(Parent folder, if this is not a root folder in the store)md"sv, std::nullopt, schema->LookupType(R"gql(Folder)gql"sv)),
 		schema::Field::Make(R"gql(store)gql"sv, R"md(Store containing this folder)md"sv, std::nullopt, schema->WrapType(introspection::TypeKind::NON_NULL, schema->LookupType(R"gql(Store)gql"sv))),
 		schema::Field::Make(R"gql(name)gql"sv, R"md(Name of this folder)md"sv, std::nullopt, schema->WrapType(introspection::TypeKind::NON_NULL, schema->LookupType(R"gql(String)gql"sv))),
+		schema::Field::Make(R"gql(containerClass)gql"sv, R"md(Class of items contained in this folder)md"sv, std::nullopt, schema->LookupType(R"gql(String)gql"sv)),
 		schema::Field::Make(R"gql(count)gql"sv, R"md(Total item count)md"sv, std::nullopt, schema->WrapType(introspection::TypeKind::NON_NULL, schema->LookupType(R"gql(Int)gql"sv))),
 		schema::Field::Make(R"gql(unread)gql"sv, R"md(Unread item count)md"sv, std::nullopt, schema->WrapType(introspection::TypeKind::NON_NULL, schema->LookupType(R"gql(Int)gql"sv))),
 		schema::Field::Make(R"gql(specialFolder)gql"sv, R"md(Special folder type, or `null` for normal folders)md"sv, std::nullopt, schema->LookupType(R"gql(SpecialFolder)gql"sv)),
