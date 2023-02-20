@@ -320,6 +320,32 @@ void Subscription::RegisterAdviseSinkProxy(service::await_async launch, std::str
 								std::make_shared<typename SubscriptionTraits<T>::Added>(index,
 									std::move(item)))));
 					}
+                    else if (notif.info.tab.propPrior.ulPropTag == PR_NULL) // new 0th row
+                    {
+						const auto& row = notif.info.tab.row;
+						const size_t columnCount = static_cast<size_t>(row.cValues);
+						mapi_ptr<SPropValue> columns;
+
+						CORt(ScDupPropset(row.cValues,
+							row.lpProps,
+							::MAPIAllocateBuffer,
+							&out_ptr { columns }));
+						CFRt(columns != nullptr);
+
+                        const int index = 0;
+						auto item = std::make_shared<T>(spSink->store,
+							nullptr,
+							columnCount,
+							std::move(columns));
+
+						spSink->rows.insert(spSink->rows.begin(), item);
+						items.push_back(std::make_shared<typename SubscriptionTraits<T>::Change>(
+							std::make_shared<typename SubscriptionTraits<T>::AddedObject>(
+								std::make_shared<typename SubscriptionTraits<T>::Added>(index,
+									std::move(item)))));
+					}
+                    // TODO: don't we need to handle the case where propPrior == PT_NULL? i.e. added
+                    // row is the new 1st row in the table? Don't we need to either update our cache or reload?
 
 					break;
 

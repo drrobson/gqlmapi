@@ -8,7 +8,7 @@ namespace graphql::mapi {
 Session::Session(bool useDefaultProfile)
 {
 	// Initialize and logon to the MAPI profile.
-	MAPIINIT_0 MAPIINIT { 0, 0 };
+	MAPIINIT_0 MAPIINIT { 0, MAPI_MULTITHREAD_NOTIFICATIONS };
 
 	CORt(MAPIInitialize(&MAPIINIT));
 	CORt(MAPILogonEx(NULL,
