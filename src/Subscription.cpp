@@ -418,11 +418,12 @@ void Subscription::RegisterAdviseSinkProxy(service::await_async launch, std::str
 						const auto index =
 							static_cast<int>(std::distance(spSink->rows.cbegin(), itr));
 
+                        const response::IdType itemId = (*itr)->id();
+
 						spSink->rows.erase(itr);
 						items.push_back(std::make_shared<typename SubscriptionTraits<T>::Change>(
 							std::make_shared<typename SubscriptionTraits<T>::RemovedObject>(
-								std::make_shared<typename SubscriptionTraits<T>::Removed>(index,
-									indexKey))));
+								std::make_shared<typename SubscriptionTraits<T>::Removed>(index, itemId))));
 					}
 
 					break;
