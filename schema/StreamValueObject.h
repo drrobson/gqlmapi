@@ -21,15 +21,15 @@ concept StreamValueIs = std::is_same_v<I, PropValue>;
 namespace methods::StreamValueHas {
 
 template <class TImpl>
-concept getValueWithParams = requires (TImpl impl, service::FieldParams params)
+concept getDataWithParams = requires (TImpl impl, service::FieldParams params)
 {
-	{ service::AwaitableScalar<response::Value> { impl.getValue(std::move(params)) } };
+	{ service::AwaitableScalar<std::string> { impl.getData(std::move(params)) } };
 };
 
 template <class TImpl>
-concept getValue = requires (TImpl impl)
+concept getData = requires (TImpl impl)
 {
-	{ service::AwaitableScalar<response::Value> { impl.getValue() } };
+	{ service::AwaitableScalar<std::string> { impl.getData() } };
 };
 
 template <class TImpl>
@@ -50,7 +50,7 @@ class [[nodiscard]] StreamValue final
 	: public service::Object
 {
 private:
-	[[nodiscard]] service::AwaitableResolver resolveValue(service::ResolverParams&& params) const;
+	[[nodiscard]] service::AwaitableResolver resolveData(service::ResolverParams&& params) const;
 
 	[[nodiscard]] service::AwaitableResolver resolve_typename(service::ResolverParams&& params) const;
 
@@ -61,7 +61,7 @@ private:
 		virtual void beginSelectionSet(const service::SelectionSetParams& params) const = 0;
 		virtual void endSelectionSet(const service::SelectionSetParams& params) const = 0;
 
-		[[nodiscard]] virtual service::AwaitableScalar<response::Value> getValue(service::FieldParams&& params) const = 0;
+		[[nodiscard]] virtual service::AwaitableScalar<std::string> getData(service::FieldParams&& params) const = 0;
 	};
 
 	template <class T>
@@ -73,19 +73,19 @@ private:
 		{
 		}
 
-		[[nodiscard]] service::AwaitableScalar<response::Value> getValue(service::FieldParams&& params) const final
+		[[nodiscard]] service::AwaitableScalar<std::string> getData(service::FieldParams&& params) const final
 		{
-			if constexpr (methods::StreamValueHas::getValueWithParams<T>)
+			if constexpr (methods::StreamValueHas::getDataWithParams<T>)
 			{
-				return { _pimpl->getValue(std::move(params)) };
+				return { _pimpl->getData(std::move(params)) };
 			}
-			else if constexpr (methods::StreamValueHas::getValue<T>)
+			else if constexpr (methods::StreamValueHas::getData<T>)
 			{
-				return { _pimpl->getValue() };
+				return { _pimpl->getData() };
 			}
 			else
 			{
-				throw std::runtime_error(R"ex(StreamValue::getValue is not implemented)ex");
+				throw std::runtime_error(R"ex(StreamValue::getData is not implemented)ex");
 			}
 		}
 

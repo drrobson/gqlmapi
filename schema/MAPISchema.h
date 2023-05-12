@@ -82,22 +82,20 @@ enum class [[nodiscard]] PropType
 	STRING,
 	GUID,
 	DATETIME,
-	BINARY,
-	STREAM
+	BINARY
 };
 
 [[nodiscard]] constexpr auto getPropTypeNames() noexcept
 {
 	using namespace std::literals;
 
-	return std::array<std::string_view, 7> {
+	return std::array<std::string_view, 6> {
 		R"gql(INT)gql"sv,
 		R"gql(BOOL)gql"sv,
 		R"gql(STRING)gql"sv,
 		R"gql(GUID)gql"sv,
 		R"gql(DATETIME)gql"sv,
-		R"gql(BINARY)gql"sv,
-		R"gql(STREAM)gql"sv
+		R"gql(BINARY)gql"sv
 	};
 }
 
@@ -105,12 +103,11 @@ enum class [[nodiscard]] PropType
 {
 	using namespace std::literals;
 
-	return std::array<std::pair<std::string_view, PropType>, 7> {
+	return std::array<std::pair<std::string_view, PropType>, 6> {
 		std::make_pair(R"gql(INT)gql"sv, PropType::INT),
 		std::make_pair(R"gql(BOOL)gql"sv, PropType::BOOL),
 		std::make_pair(R"gql(GUID)gql"sv, PropType::GUID),
 		std::make_pair(R"gql(BINARY)gql"sv, PropType::BINARY),
-		std::make_pair(R"gql(STREAM)gql"sv, PropType::STREAM),
 		std::make_pair(R"gql(STRING)gql"sv, PropType::STRING),
 		std::make_pair(R"gql(DATETIME)gql"sv, PropType::DATETIME)
 	};

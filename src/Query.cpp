@@ -3,7 +3,12 @@
 
 #include "Types.h"
 
+
+#include "Guid.h"
+#include "PropertyHelpers.h"
 #include "StoreObject.h"
+
+#include <Imessage.h>
 
 namespace graphql::mapi {
 
@@ -182,6 +187,39 @@ std::vector<std::shared_ptr<object::Store>> Query::getStores(
 	}
 
 	return result;
+}
+
+std::vector<std::shared_ptr<object::Property>> Query::getMsgFileData(
+		service::FieldParams&& params, std::string&& filepathArg, std::vector<Column>&& propsArg)
+{
+	auto filepath = convert::utf8::to_utf16(filepathArg);
+	NameIdToPropId nameIdMap;
+
+	CComPtr<IMalloc> malloc;
+	CORt(CoGetMalloc(1, &malloc));
+
+	CComPtr<IStorage> storage;
+	CORt(StgOpenStorage(filepath.c_str(),
+		nullptr,
+		STGM_READ | STGM_SHARE_DENY_WRITE,
+		nullptr,
+		0,
+		&storage));
+
+	mapi_ptr<IMessage> message;
+	CORt(OpenIMsgOnIStg(nullptr, //session.get(),
+		MAPIAllocateBuffer,
+		MAPIAllocateMore,
+		MAPIFreeBuffer,
+		malloc,
+		nullptr /*support*/,
+		storage,
+		nullptr /*release callback*/,
+		0 /*caller data*/,
+		MAPI_UNICODE /*flags*/,
+		&out_ptr {message}));
+
+	return prop::GetProperties(message.get(), nameIdMap, propsArg);
 }
 
 } // namespace graphql::mapi

@@ -12,6 +12,7 @@ add_library(gqlmapiCommon STATIC
   Folder.cpp
   Item.cpp
   Property.cpp
+  PropertyHelpers.cpp
   IntId.cpp
   NamedId.cpp
   StringId.cpp
@@ -22,6 +23,7 @@ add_library(gqlmapiCommon STATIC
   GuidValue.cpp
   DateTimeValue.cpp
   BinaryValue.cpp
+  StreamValue.cpp
   CheckResult.cpp
   Unicode.cpp
   Guid.cpp

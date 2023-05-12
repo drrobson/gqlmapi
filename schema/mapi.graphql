@@ -4,6 +4,12 @@ type Query {
     "Optional list of store IDs, return all stores if `null`"
     ids: [ID!] = null
   ): [Store!]!
+  msgFileData(
+    "Filepath on the local machine of the .msg file to read"
+    filepath: String!,
+    "List of MAPI property IDs to read from the file"
+    props: [Column!]!
+  ): [Property]!
 }
 
 type Mutation {
@@ -407,7 +413,7 @@ scalar Stream
 
 "This type represents a Stream value in a property value variant union."
 type StreamValue {
-  value: Stream!
+  data: String!
 }
 
 "Property IDs are either built-in integer IDs or named property descriptions."
@@ -445,8 +451,6 @@ enum PropType {
   DATETIME
   "This property expects a `BinaryValue`"
   BINARY
-  "This property expects a `StreamValue`"
-  STREAM @deprecated(reason: "You can't sort on a `StreamValue`")
 }
 
 "Sort in ascending or descending order based on a single property."

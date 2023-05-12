@@ -1014,8 +1014,7 @@ void AddTypesToSchema(const std::shared_ptr<schema::Schema>& schema)
 		{ service::s_namesPropType[static_cast<size_t>(mapi::PropType::STRING)], R"md(This property expects a `StringValue`)md"sv, std::nullopt },
 		{ service::s_namesPropType[static_cast<size_t>(mapi::PropType::GUID)], R"md(This property expects a `GuidValue`)md"sv, std::nullopt },
 		{ service::s_namesPropType[static_cast<size_t>(mapi::PropType::DATETIME)], R"md(This property expects a `DateTimeValue`)md"sv, std::nullopt },
-		{ service::s_namesPropType[static_cast<size_t>(mapi::PropType::BINARY)], R"md(This property expects a `BinaryValue`)md"sv, std::nullopt },
-		{ service::s_namesPropType[static_cast<size_t>(mapi::PropType::STREAM)], R"md(This property expects a `StreamValue`)md"sv, std::make_optional(R"md(You can't sort on a `StreamValue`)md"sv) }
+		{ service::s_namesPropType[static_cast<size_t>(mapi::PropType::BINARY)], R"md(This property expects a `BinaryValue`)md"sv, std::nullopt }
 	});
 
 	typeObjectId->AddInputValues({

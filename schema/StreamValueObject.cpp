@@ -37,7 +37,7 @@ service::TypeNames StreamValue::getTypeNames() const noexcept
 service::ResolverMap StreamValue::getResolvers() const noexcept
 {
 	return {
-		{ R"gql(value)gql"sv, [this](service::ResolverParams&& params) { return resolveValue(std::move(params)); } },
+		{ R"gql(data)gql"sv, [this](service::ResolverParams&& params) { return resolveData(std::move(params)); } },
 		{ R"gql(__typename)gql"sv, [this](service::ResolverParams&& params) { return resolve_typename(std::move(params)); } }
 	};
 }
@@ -52,14 +52,14 @@ void StreamValue::endSelectionSet(const service::SelectionSetParams& params) con
 	_pimpl->endSelectionSet(params);
 }
 
-service::AwaitableResolver StreamValue::resolveValue(service::ResolverParams&& params) const
+service::AwaitableResolver StreamValue::resolveData(service::ResolverParams&& params) const
 {
 	std::unique_lock resolverLock(_resolverMutex);
 	auto directives = std::move(params.fieldDirectives);
-	auto result = _pimpl->getValue(service::FieldParams(service::SelectionSetParams{ params }, std::move(directives)));
+	auto result = _pimpl->getData(service::FieldParams(service::SelectionSetParams{ params }, std::move(directives)));
 	resolverLock.unlock();
 
-	return service::ModifiedResult<response::Value>::convert(std::move(result), std::move(params));
+	return service::ModifiedResult<std::string>::convert(std::move(result), std::move(params));
 }
 
 service::AwaitableResolver StreamValue::resolve_typename(service::ResolverParams&& params) const
@@ -72,7 +72,7 @@ service::AwaitableResolver StreamValue::resolve_typename(service::ResolverParams
 void AddStreamValueDetails(const std::shared_ptr<schema::ObjectType>& typeStreamValue, const std::shared_ptr<schema::Schema>& schema)
 {
 	typeStreamValue->AddFields({
-		schema::Field::Make(R"gql(value)gql"sv, R"md()md"sv, std::nullopt, schema->WrapType(introspection::TypeKind::NON_NULL, schema->LookupType(R"gql(Stream)gql"sv)))
+		schema::Field::Make(R"gql(data)gql"sv, R"md()md"sv, std::nullopt, schema->WrapType(introspection::TypeKind::NON_NULL, schema->LookupType(R"gql(String)gql"sv)))
 	});
 }
 

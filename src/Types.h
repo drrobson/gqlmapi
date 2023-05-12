@@ -219,6 +219,8 @@ public:
 	// Resolvers/Accessors which implement the GraphQL type
 	std::vector<std::shared_ptr<object::Store>> getStores(
 		service::FieldParams&& params, std::optional<std::vector<response::IdType>>&& idsArg);
+	std::vector<std::shared_ptr<object::Property>> getMsgFileData(
+		service::FieldParams&& params, std::string&& filepathArg, std::vector<Column>&& propsArg);
 
 private:
 	std::shared_ptr<Session> m_session;
@@ -713,12 +715,22 @@ private:
 	CComPtr<IMessage> m_message;
 };
 
+enum class StreamEncoding
+{
+	unknown = 0,
+	binary,
+	utf8,
+	utf16,
+};
+using DataStream = std::pair<CComPtr<IStream>, StreamEncoding>;
+
 class Property
 {
 public:
 	using id_variant = std::variant<ULONG, MAPINAMEID>;
+	using value_variant = std::variant<mapi_ptr<SPropValue>, DataStream>;
 
-	explicit Property(const id_variant& id, mapi_ptr<SPropValue>&& value);
+	explicit Property(const id_variant& id, value_variant&& value);
 
 	// Resolvers/Accessors which implement the GraphQL type
 	std::shared_ptr<object::PropId> getId() const;
@@ -726,7 +738,7 @@ public:
 
 private:
 	const std::shared_ptr<object::PropId> m_id;
-	const mapi_ptr<SPropValue> m_value;
+	const std::shared_ptr<object::PropValue> m_value;
 };
 
 class IntId
@@ -838,6 +850,19 @@ public:
 
 private:
 	const response::IdType m_value;
+};
+
+class StreamValue
+{
+public:
+	explicit StreamValue(DataStream&& dataStream);
+
+	// Resolvers/Accessors which implement the GraphQL type
+	const std::string& getData() const;
+
+private:
+	DataStream m_dataStream;
+	const std::string m_data;
 };
 
 class ItemAdded

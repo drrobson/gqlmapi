@@ -26,6 +26,18 @@ concept getStores = requires (TImpl impl, std::optional<std::vector<response::Id
 };
 
 template <class TImpl>
+concept getMsgFileDataWithParams = requires (TImpl impl, service::FieldParams params, std::string filepathArg, std::vector<Column> propsArg)
+{
+	{ service::AwaitableObject<std::vector<std::shared_ptr<Property>>> { impl.getMsgFileData(std::move(params), std::move(filepathArg), std::move(propsArg)) } };
+};
+
+template <class TImpl>
+concept getMsgFileData = requires (TImpl impl, std::string filepathArg, std::vector<Column> propsArg)
+{
+	{ service::AwaitableObject<std::vector<std::shared_ptr<Property>>> { impl.getMsgFileData(std::move(filepathArg), std::move(propsArg)) } };
+};
+
+template <class TImpl>
 concept beginSelectionSet = requires (TImpl impl, const service::SelectionSetParams params)
 {
 	{ impl.beginSelectionSet(params) };
@@ -44,6 +56,7 @@ class [[nodiscard]] Query final
 {
 private:
 	[[nodiscard]] service::AwaitableResolver resolveStores(service::ResolverParams&& params) const;
+	[[nodiscard]] service::AwaitableResolver resolveMsgFileData(service::ResolverParams&& params) const;
 
 	[[nodiscard]] service::AwaitableResolver resolve_typename(service::ResolverParams&& params) const;
 	[[nodiscard]] service::AwaitableResolver resolve_schema(service::ResolverParams&& params) const;
@@ -59,6 +72,7 @@ private:
 		virtual void endSelectionSet(const service::SelectionSetParams& params) const = 0;
 
 		[[nodiscard]] virtual service::AwaitableObject<std::vector<std::shared_ptr<Store>>> getStores(service::FieldParams&& params, std::optional<std::vector<response::IdType>>&& idsArg) const = 0;
+		[[nodiscard]] virtual service::AwaitableObject<std::vector<std::shared_ptr<Property>>> getMsgFileData(service::FieldParams&& params, std::string&& filepathArg, std::vector<Column>&& propsArg) const = 0;
 	};
 
 	template <class T>
@@ -83,6 +97,22 @@ private:
 			else
 			{
 				throw std::runtime_error(R"ex(Query::getStores is not implemented)ex");
+			}
+		}
+
+		[[nodiscard]] service::AwaitableObject<std::vector<std::shared_ptr<Property>>> getMsgFileData(service::FieldParams&& params, std::string&& filepathArg, std::vector<Column>&& propsArg) const final
+		{
+			if constexpr (methods::QueryHas::getMsgFileDataWithParams<T>)
+			{
+				return { _pimpl->getMsgFileData(std::move(params), std::move(filepathArg), std::move(propsArg)) };
+			}
+			else if constexpr (methods::QueryHas::getMsgFileData<T>)
+			{
+				return { _pimpl->getMsgFileData(std::move(filepathArg), std::move(propsArg)) };
+			}
+			else
+			{
+				throw std::runtime_error(R"ex(Query::getMsgFileData is not implemented)ex");
 			}
 		}
 
